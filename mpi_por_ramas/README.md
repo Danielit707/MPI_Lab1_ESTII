@@ -1,7 +1,27 @@
-# Tarea 2: repartir ramas de cada tablero
+# MPI por ramas
 
-Implementa una versión MPI en esta carpeta. Con `--all`, el proceso coordinador lee los 30 IDs de `seeds.txt` en orden. Para cada tablero, crea tareas a partir de opciones válidas de las primeras casillas vacías y reparte esas ramas entre procesos. Espera a que termine ese tablero antes de comenzar el siguiente: **los tableros se procesan secuencialmente y las ramas de cada tablero en paralelo**.
+El coordinador procesa los IDs en el orden del archivo y no empieza el
+siguiente tablero hasta que termina el actual. Para cada tablero, crea tareas
+con los valores válidos de la primera casilla vacía. Los demás procesos exploran
+esas ramas en paralelo con backtracking; si aparece una solución, se solicita a
+los trabajadores activos que cancelen su búsqueda.
 
-Cada proceso explora su rama con backtracking y comunica el resultado. Cuando se encuentra una solución, los demás deben dejar de buscar ese tablero. Muestra el estado y el tiempo parcial de cada ID al terminarlo, además del tiempo total de los 30. Conserva la opción `--id` para resolver un solo tablero.
+## Ejecutar con Docker en Windows (PowerShell)
 
-Añade aquí los comandos para ejecutar `--id` y `--all` con el contenedor. Incluye `--allow-run-as-root --use-hwthread-cpus --oversubscribe` en `mpiexec`, como en la calibración. Compara el tiempo total de `--all` con la versión secuencial y registra los resultados en `../INFORME.md`.
+Abre Docker Desktop y espera a que indique que el motor está en ejecución. Desde
+la carpeta raíz del proyecto, usa `N=8` recomendado para este equipo. Si
+calibras en otro equipo, reemplaza el valor por el recomendado allí:
+
+```powershell
+$N = 8
+docker run --rm -v "${PWD}:/app" augustosalazar/slim-mpi:2 mpiexec --allow-run-as-root --use-hwthread-cpus --oversubscribe -n $N python /app/mpi_por_ramas/resolver_mpi.py --all
+```
+
+Para resolver solo un ID:
+
+```powershell
+docker run --rm -v "${PWD}:/app" augustosalazar/slim-mpi:2 mpiexec --allow-run-as-root --use-hwthread-cpus --oversubscribe -n $N python /app/mpi_por_ramas/resolver_mpi.py --id 7
+```
+
+Se puede indicar otro archivo con `--archivo /app/mi_archivo.txt`. La salida
+muestra el tiempo parcial por tablero y el tiempo total de la ejecución MPI.

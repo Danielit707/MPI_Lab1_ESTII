@@ -54,7 +54,7 @@ docker run --rm -v "${PWD}:/app" augustosalazar/slim-mpi:2 python /app/baseline_
 
 La salida muestra el ID y si se resolvió cada tablero; no imprime las respuestas. Con `--id` muestra el tiempo de ese tablero. Con `--all` muestra el **tiempo parcial de cada tablero en cuanto termina** y el **tiempo total** al final. El tiempo total es la suma de los tiempos de búsqueda medidos con `time.perf_counter()`; no incluye lectura del archivo ni impresión de resultados.
 
-Los 30 tableros incluidos tienen solución única. Al seleccionarlos en este contenedor, cada uno tardó aproximadamente entre 2 y 10 segundos con el backtracking serial. Una ejecución completa con `--all` tardó **111,72 segundos**. Los tiempos variarán según el equipo; usa el mismo archivo y entorno al comparar la versión serial con MPI.
+Los 30 tableros incluidos tienen solución única. Al seleccionarlos en este contenedor, cada uno tardó aproximadamente entre 2 y 10 segundos con el backtracking serial. En las tres mediciones del informe, el tiempo serial mediano para `--all` fue **151,55 segundos**. Los tiempos variarán según el equipo; usa el mismo archivo y entorno al comparar la versión serial con MPI.
 
 ## Elegir `N` por equipo
 
@@ -97,12 +97,19 @@ El lector supone que las seeds del archivo tienen el formato indicado y son vál
 
 `resolver()` modifica el tablero recibido. El programa principal hace una copia antes de cada búsqueda para conservar la seed original.
 
-## Tarea por resolver: tres formas de usar MPI
+## Tres formas de usar MPI
 
-Implementa las tres propuestas en carpetas separadas. Cada carpeta contiene la consigna de su estrategia y debe incluir el código y las instrucciones para ejecutarlo **con el contenedor**:
+Las implementaciones están en carpetas separadas; cada README explica cómo
+ejecutarlas con Docker desde PowerShell. Asegúrate de que Docker Desktop esté
+iniciado y usa el mismo `N`, elegido con el calibrador, en los tres comandos:
 
-1. [mpi_por_tableros](mpi_por_tableros/README.md): repartir los IDs entre procesos para resolver los 30 tableros con `--all`.
-2. [mpi_por_ramas](mpi_por_ramas/README.md): recorrer los 30 IDs en orden con `--all` y repartir entre procesos las ramas de cada tablero; terminar uno antes de comenzar el siguiente.
-3. [mpi_hibrido](mpi_hibrido/README.md): combinar el reparto de IDs con el reparto de ramas dentro de cada tablero.
+1. [mpi_por_tableros](mpi_por_tableros/README.md): reparte los tableros entre procesos.
+2. [mpi_por_ramas](mpi_por_ramas/README.md): procesa los IDs en orden y paraleliza las ramas de cada tablero.
+3. [mpi_hibrido](mpi_hibrido/README.md): combina grupos de tableros con paralelismo de ramas.
 
-Entrega también el [informe de resultados](INFORME.md) con los tiempos de la versión secuencial y de las tres implementaciones y conclusiones sustentadas por esas mediciones. Elige **un solo valor de `N` por equipo** con la calibración descrita arriba y usa ese mismo `N` en las tres comparaciones MPI. Agrega `--allow-run-as-root --use-hwthread-cpus --oversubscribe` a `mpiexec` en las tres implementaciones, como en el calibrador. Para MPI, mide el tiempo real desde que empieza el trabajo hasta que llegan todos los resultados; no sumes los tiempos de los procesos como tiempo total.
+El [informe de resultados](INFORME.md) incluye los comandos y una tabla para
+registrar tres ejecuciones de cada variante. Completa las medianas y las
+conclusiones con mediciones de tu equipo; no compares ejecuciones hechas con
+distintos valores de `N` o entornos. El tiempo total MPI abarca el reparto del
+trabajo y la recepción de los resultados, no la suma de los tiempos de búsqueda
+de cada proceso.
